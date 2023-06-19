@@ -7,7 +7,7 @@
 
 
 import ee
-ee.Authenticate()
+#ee.Authenticate()
 ee.Initialize()
 print(ee.Image('srtm90_v4'))
 
@@ -16,7 +16,7 @@ countries = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
 Ethiopia = countries.filter(ee.Filter.eq('country_na', 'Ethiopia'))
 
 
-#Print the elevation of Mt Everest
+#print the land elevation
 dem=ee.Image('USGS/SRTMGL1_003')
 
 
