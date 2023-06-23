@@ -1,6 +1,18 @@
 import ee
 import folium
+# Define the add_ee_layer method for folium.Map
+def add_ee_layer(self, ee_image_object, vis_params, name):
+    map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
+    folium.raster_layers.TileLayer(
+        tiles=map_id_dict['tile_fetcher'].url_format,
+        attr='Map Data &copy; <a href="https://earthengine.google.com/">Google Earth Engine</a>',
+        name=name,
+        overlay=True,
+        control=True
+    ).add_to(self)
 
+# Add the add_ee_layer method to folium.Map
+folium.Map.add_ee_layer = add_ee_layer
 # Initialize Earth Engine
 ee.Initialize()
 
@@ -24,9 +36,9 @@ plot3=[[73.012814,26.590995],
 
 date_1=['2022-03-28','2022-04-04'] #sowing centered around 1st april
 date_2=['2022-06-12','2022-06-18'] #growing centered around 15th june
-date_3=['2022-09-12','2022-09-18'] #just before harvest centered around 15th september
+date_3=['2022-09-01','2022-09-30'] #just before harvest centered around 15th september
 
-
+plot_Id=['plot1','plot2','plot3']
 for i,plot_ in enumerate([plot1,plot2,plot3]):
     for date_ in [date_1,date_2,date_3]:
         roi=ee.Geometry.Polygon(plot_)
@@ -34,11 +46,11 @@ for i,plot_ in enumerate([plot1,plot2,plot3]):
 
 
         #want the maximum y coordinate
-        for i,coords in enumerate(roi.getInfo()['coordinates']):
+        for j,coords in enumerate(roi.getInfo()['coordinates']):
             max_y=0
-            if coords[i][1]>max_y:
-                max_y=coords[i][1]
-                max_y_index=i
+            if coords[j][1]>max_y:
+                max_y=coords[j][1]
+                max_y_index=j
         # Load Sentinel-2 surface reflectance collection
         collection = ee.ImageCollection('COPERNICUS/S2_SR') \
             .filterDate(date_[0],date_[1] ) \
@@ -80,10 +92,10 @@ for i,plot_ in enumerate([plot1,plot2,plot3]):
             location=[max_y, lon], #printing the text box slightly above the polygon
             icon=folium.DivIcon(
                 icon_size=(150, 36),
-                html=f'<div style="font-size: 12pt; font-weight: bold">Date: {date_of_image} \n Plot: {} </div>',
+                html=f'<div style="font-size: 12pt; font-weight: bold">Date: {date_of_image} \n Plot: {plot_Id[i]} </div>',
                 )
             )
         map.add_child(text_box)
         # Display the map
         map
-        map.save(f'../results/plot_{i}_date_{date_of_image}.html')
+        map.save(f'../results/plot_{plot_Id[i]}_date_{date_of_image}.html')
